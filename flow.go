@@ -164,7 +164,10 @@ func resolveTransition(storedTransition map[string][]rune, value string) *Transi
 		var ok bool
 		values, ok := storedTransition[ref]
 		if !ok {
-			panic("transition reference not found. ref: " + ref)
+			values, ok = PredefinedTransitions[ref]
+			if !ok {
+				panic("transition reference not found. ref: " + ref)
+			}
 		}
 		return &Transition{values: values}
 	}
@@ -204,13 +207,14 @@ func (f *Flow) copy(newFlowName, from, to string) (*Flow, error) {
 	}
 	visit := make(map[string]bool)
 	ff := newFlow(newFlowName)
+	tag := ff.chainTag(fromState.tag)
 	start := &State{
 		_type:  fromState._type,
 		tag:    ff.chainTag(fromState.tag),
 		output: make([]*Transition, 0, len(fromState.output)),
 	}
 
-	ff.states[ff.chainTag(fromState.tag)] = start
+	ff.states[tag] = start
 	ff.start = start
 	f.copyCore(fromState, start, ff, to, visit)
 	return ff, nil

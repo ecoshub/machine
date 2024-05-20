@@ -16,7 +16,7 @@ func init() {
 func createCoreMachine() *StateMachine {
 	sm := New()
 	sm.DefineStringDefineTransition("start_chars", AlphaUpper+AlphaLower+Underline)
-	sm.DefineStringDefineTransition("chars", AlphaNumeric+Underline)
+	sm.DefineStringDefineTransition("chars", AlphaNumerical+Underline)
 
 	sm.Define("transition_parser", "_start_", " ", "_start_")
 	sm.Define("transition_parser", "_start_", `"`, "value_1_start", TransitionSymbolAny, "val_1", TransitionSymbolAny, "val_1", `"`, "value_end", " ", "value_end", "+", "_start_")
@@ -71,9 +71,12 @@ func Build(transition []byte) (*StateMachine, error) {
 	core.Record("main_transition_parser.transition_parser.ref_name", "main_transition_parser.transition_parser.value_end", func(value string) {
 		v, ok := transitions[value]
 		if !ok {
-			fmt.Println("reference not exists", value)
-			os.Exit(1)
-			return
+			v, ok = PredefinedTransitions[value]
+			if !ok {
+				fmt.Println("reference not exists", value)
+				os.Exit(1)
+				return
+			}
 		}
 		transitionValues = append(transitionValues, v...)
 	})
@@ -123,8 +126,11 @@ func Build(transition []byte) (*StateMachine, error) {
 	core.Record("flow_transition_parser.transition_value_parser.ref_name", "flow_transition_parser.transition_value_parser._end_", func(value string) {
 		values, ok := transitions[value]
 		if !ok {
-			fmt.Println("transition reference not found. ref:", value)
-			os.Exit(1)
+			values, ok = PredefinedTransitions[value]
+			if !ok {
+				fmt.Println("transition reference not found. ref:", value)
+				os.Exit(1)
+			}
 		}
 		stateAndTransitions = append(stateAndTransitions, string(values))
 	})
@@ -144,10 +150,13 @@ func Build(transition []byte) (*StateMachine, error) {
 		}
 	})
 
+	core.debug = true
+
 	err := core.Match(string(transition))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("build error. err: %s", err)
 	}
 
+	generatedSM.dirty = true
 	return generatedSM, nil
 }

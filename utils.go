@@ -1,6 +1,9 @@
 package machine
 
-import "math/rand"
+import (
+	"math/rand"
+	"unicode"
+)
 
 const (
 	hex = "0123456789abcdef"
@@ -39,22 +42,21 @@ func printCharString(values []rune) string {
 }
 
 func printChar(char rune) (string, int) {
-	stringChar := ""
-	intChar := 0
-	if char == '\n' || char == '\t' {
-		if char == '\n' {
-			stringChar = `\n`
-			intChar = int('\n')
+	switch char {
+	case '\n':
+		return `\n`, int('\n')
+	case '\t':
+		return `\t`, int('\t')
+	case TransitionAny:
+		return TransitionSymbolAny, int(char)
+	case TransitionFree:
+		return TransitionSymbolFree, int(char)
+	default:
+		if unicode.IsPrint(char) {
+			return string(char), int(char)
 		}
-		if char == '\t' {
-			stringChar = `\t`
-			intChar = int('\t')
-		}
-	} else {
-		stringChar = string(char)
-		intChar = int(char)
+		return ".", int(char)
 	}
-	return stringChar, intChar
 }
 
 func rawStringToRunes(values string) []rune {

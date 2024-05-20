@@ -1,6 +1,8 @@
 package machine
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type StateMachine struct {
 	start       *State

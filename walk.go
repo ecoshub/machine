@@ -21,6 +21,7 @@ func Walk(start *State, text []rune, debug bool, f func(s *State, r rune)) error
 		if !found {
 			index := i
 			char := text[index]
+			// breakx.Point()
 			return unexpectedCharError(debug, string(text), state.tag, index, char)
 		}
 		state = tmp
@@ -29,10 +30,15 @@ func Walk(start *State, text []rune, debug bool, f func(s *State, r rune)) error
 	if !ok {
 		index := len(text) - 1
 		char := text[index]
+		// breakx.Point()
 		return unexpectedCharError(debug, string(text), state.tag, index, char)
 	}
 	return nil
 }
+
+var (
+	debug bool = false
+)
 
 func walk(s *State, r rune, debug bool, f func(s *State, r rune)) (*State, bool) {
 	for _, o := range s.output {
@@ -96,7 +102,12 @@ func isEnd(current *State, f func(s *State, r rune)) bool {
 
 func Print(s *State, tags ...string) {
 	visit := make(map[*State]bool)
+	// st := stable.New(s.tag)
+	// st.AddField("first")
+	// st.AddField("transition")
+	// st.AddField("second")
 	print(s, visit, tags...)
+	// fmt.Println(st)
 }
 
 func print(s *State, visit map[*State]bool, tags ...string) {
@@ -107,10 +118,12 @@ func print(s *State, visit map[*State]bool, tags ...string) {
 
 	for _, o := range s.output {
 		if len(tags) == 0 {
+			// st.Row(s.tag, fmt.Sprintf("'%s' %v", printCharString(o.values), o.values), o.to.tag)
 			fmt.Printf("%s\t->\t%s\t%v\t(%s)\n", s.tag, o.to.tag, o.values, printCharString(o.values))
 		} else {
 			for _, t := range tags {
 				if strings.Contains(s.tag, t) || strings.Contains(o.to.tag, t) {
+					// st.Row(s.tag, fmt.Sprintf("'%s' %v", printCharString(o.values), o.values), o.to.tag)
 					fmt.Printf("%s\t->\t%s\t%v\t(%s)\n", s.tag, o.to.tag, o.values, printCharString(o.values))
 				}
 			}
