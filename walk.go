@@ -21,7 +21,6 @@ func Walk(start *State, text []rune, debug bool, f func(s *State, r rune)) error
 		if !found {
 			index := i
 			char := text[index]
-			// breakx.Point()
 			return unexpectedCharError(debug, string(text), state.tag, index, char)
 		}
 		state = tmp
@@ -30,7 +29,6 @@ func Walk(start *State, text []rune, debug bool, f func(s *State, r rune)) error
 	if !ok {
 		index := len(text) - 1
 		char := text[index]
-		// breakx.Point()
 		return unexpectedCharError(debug, string(text), state.tag, index, char)
 	}
 	return nil
@@ -90,6 +88,9 @@ func isEnd(current *State, f func(s *State, r rune)) bool {
 				continue
 			}
 			if v == TransitionFree {
+				if f != nil {
+					f(o.to, v)
+				}
 				ok := isEnd(o.to, f)
 				if ok {
 					return true
