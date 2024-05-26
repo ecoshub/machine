@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+var (
+	debug bool = false
+)
+
 func Walk(start *State, text []rune, debug bool, f func(s *State, r rune)) error {
 	if len(text) == 0 {
 		return errors.New("null text passed")
@@ -25,7 +29,7 @@ func Walk(start *State, text []rune, debug bool, f func(s *State, r rune)) error
 		}
 		state = tmp
 	}
-	ok := isEnd(state, f)
+	ok := isEnd(start, state, f)
 	if !ok {
 		index := len(text) - 1
 		char := text[index]
@@ -33,10 +37,6 @@ func Walk(start *State, text []rune, debug bool, f func(s *State, r rune)) error
 	}
 	return nil
 }
-
-var (
-	debug bool = false
-)
 
 func walk(s *State, r rune, debug bool, f func(s *State, r rune)) (*State, bool) {
 	for _, o := range s.output {
@@ -74,8 +74,12 @@ func walk(s *State, r rune, debug bool, f func(s *State, r rune)) (*State, bool)
 	return nil, false
 }
 
-func isEnd(current *State, f func(s *State, r rune)) bool {
-	if current.tag == string(SpecialFlowMain) {
+func isEnd(start, current *State, f func(s *State, r rune)) bool {
+	flowTags := strings.Split(current.tag, ".")
+	flow := flowTags[0]
+	startFlowTags := strings.Split(current.tag, ".")
+	startFlow := startFlowTags[0]
+	if flow == startFlow {
 		if current._type == StateEnd {
 			if f != nil {
 				f(current, 0)
@@ -93,7 +97,7 @@ func isEnd(current *State, f func(s *State, r rune)) bool {
 				if f != nil {
 					f(o.to, v)
 				}
-				ok := isEnd(o.to, f)
+				ok := isEnd(start, o.to, f)
 				if ok {
 					return true
 				}

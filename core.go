@@ -41,6 +41,7 @@ func createCoreMachine() *StateMachine {
 	sm.Define("_main_", "_start_", "#", "comment", TransitionSymbolAny, "comment", "\n", "_start_", "\n", "_start_")
 	sm.Define("_main_", "_start_", "$", "transition_name_start", "$start_chars", "transition_name", "$chars", "transition_name", ":", "transition_value_start", " ", "transition_value_start")
 	sm.Define("_main_", "transition_value_start", TransitionSymbolFree, "{main_transition_parser: @transition_parser}", TransitionSymbolFree, "transition_name_end", TransitionSymbolFree, "_start_", TransitionSymbolFree, "_end_", "\n", "_end_")
+	sm.Define("_main_", "_start_", TransitionSymbolFree, "_end_")
 
 	sm.Define("_main_", "_start_", "@", "state_name_start", "$start_chars", "state_name", "$chars", "state_name", ":", "state_value_start", " ", "state_value_start", "\n", "state_value_start", "\t", "state_value_start")
 	sm.Define("_main_", "state_value_start", "[", "state_1_start", "\n", "state_1_start", "\t", "state_1_start", " ", "state_1_start")
@@ -151,7 +152,6 @@ func Build(transition []byte) (*StateMachine, error) {
 	})
 
 	core.debug = true
-
 	err := core.Match(string(transition))
 	if err != nil {
 		return nil, fmt.Errorf("build error. err: %s", err)

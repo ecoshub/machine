@@ -49,11 +49,23 @@ func (f *Flow) searchStateTag(tag string) (*State, bool) {
 }
 
 func (f *Flow) searchEndState() (*State, bool) {
-	return f.searchStateTag(string(SpecialStateEnd))
+	s, ok := f.searchStateTag(string(SpecialStateEnd))
+	if ok {
+		if s._type == StateEnd {
+			return s, true
+		}
+	}
+	return nil, false
 }
 
 func (f *Flow) searchStartState() (*State, bool) {
-	return f.searchStateTag(string(SpecialStateStart))
+	s, ok := f.searchStateTag(string(SpecialStateStart))
+	if ok {
+		if s._type == StateStart {
+			return s, true
+		}
+	}
+	return nil, false
 }
 
 func (f *Flow) newFlow(flows map[string]*Flow, storedTransition map[string][]rune, elements ...string) {
@@ -75,6 +87,12 @@ func (f *Flow) newFlow(flows map[string]*Flow, storedTransition map[string][]run
 				states = append(states, end)
 			} else {
 				s := f.resolveState(flows, tag)
+				if tag == string(SpecialStateEnd) {
+					s._type = StateEnd
+				}
+				if tag == string(SpecialStateStart) {
+					s._type = StateStart
+				}
 				states = append(states, s)
 			}
 		} else {
@@ -126,11 +144,12 @@ func (f *Flow) resolveFlowReference(flows map[string]*Flow, tag string) (*State,
 	flows[newFlowName] = ff
 	end, ok := ff.searchEndState()
 	if !ok {
-		panic("reference flow must consist '_end_' states")
+		panic(fmt.Sprintf("reference flow must consist '_end_' states. flow: %s", ff.tag))
 	}
 	ff.end = end
+	end._type = StateEnd
 	if ff.start == nil {
-		panic("reference flow must consist '_start_' states")
+		panic(fmt.Sprintf("reference flow must consist '_start_' states. flow: %s", ff.tag))
 	}
 	return ff.start, ff.end, nil
 }
