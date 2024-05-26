@@ -75,11 +75,13 @@ func walk(s *State, r rune, debug bool, f func(s *State, r rune)) (*State, bool)
 }
 
 func isEnd(current *State, f func(s *State, r rune)) bool {
-	if current._type == StateEnd {
-		if f != nil {
-			f(current, 0)
+	if current.tag == string(SpecialFlowMain) {
+		if current._type == StateEnd {
+			if f != nil {
+				f(current, 0)
+			}
+			return true
 		}
-		return true
 	}
 
 	for _, o := range current.output {
